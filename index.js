@@ -6,6 +6,10 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
+//change----
+// app.use(cors());
+// app.use(express.json());
+
 const corsConfig = {
   origin: "*",
   credentials: true,
@@ -23,30 +27,30 @@ const corsConfig = {
   credentials: true,
 };
 
-//middleware
+// middleware
 app.use(cors(corsConfig));
 app.options("*", cors(corsConfig));
 app.use(express.json());
 
-const verifyJWT = (req, res, next) => {
-  const authorization = req.headers.authorization;
-  if (!authorization) {
-    return res
-      .status(401)
-      .send({ error: true, message: "Unauthorized Access!!!" });
-  }
-  const token = authorization.split(" ")[1];
+// const verifyJWT = (req, res, next) => {
+//   const authorization = req.headers.authorization;
+//   if (!authorization) {
+//     return res
+//       .status(401)
+//       .send({ error: true, message: "Unauthorized Access!!!" });
+//   }
+//   const token = authorization.split(" ")[1];
 
-  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-    if (err) {
-      return res
-        .status(403)
-        .send({ error: true, message: "Forbidden Access!!!" });
-    }
-    req.decoded = decoded;
-    next();
-  });
-};
+//   jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+//     if (err) {
+//       return res
+//         .status(403)
+//         .send({ error: true, message: "Forbidden Access!!!" });
+//     }
+//     req.decoded = decoded;
+//     next();
+//   });
+// };
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.cq8nopc.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -59,10 +63,23 @@ const client = new MongoClient(uri, {
   }
 });
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+// change----
+const dbConnect = async() =>{
+  try{
+    client.connect();
+    console.log("Database connected successfully");
+  }
+  catch(error){
+    console.log(error.name, error.message);
+  }
+}
+dbConnect();
+
+
+// async function run() {
+//   try {
+//     // Connect the client to the server	(optional starting in v4.7)
+//     await client.connect();
 
 
     const usersCollection = client.db("collegeSelectorDb").collection("users");
@@ -170,14 +187,14 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    //await client.close();
-  }
-}
-run().catch(console.dir);
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     //await client.close();
+//   }
+// }
+// run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Server is Running...");
